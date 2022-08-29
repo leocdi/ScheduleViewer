@@ -1,0 +1,113 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+
+<h2>Jobs</h2>
+
+
+<script src="https://code.highcharts.com/gantt/highcharts-gantt.js"></script>
+<script src="https://code.highcharts.com/gantt/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/gantt/modules/accessibility.js"></script>
+
+<div class="container-fluid">
+
+<div class="scrolling-containerhs">
+    <div id="containerhs"></div>
+</div>
+</div>
+
+<script>
+
+    jobs = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model));
+
+    series = jobs.map(function (j, i) {
+        var data = j.occurences.map(function (occurence) {
+            return {
+                id: 'occurence-' + i,
+                rentedTo: occurence.rentedTo,
+                start: occurence.from,
+                end: occurence.to,
+                instanceId: occurence.instanceId,
+                y: i
+            };
+        });
+        return {
+            name: j.job,
+            data: data,
+            current: j.occurences[j.current]
+        };
+    });
+
+    Highcharts.setOptions({
+        global: {
+            useUTC: true,
+            timezoneOffset: -120
+        }
+    });
+
+    Highcharts.ganttChart('containerhs', {
+        navigator: {
+            enabled: true,
+            liveRedraw: true,
+            series: {
+                type: 'gantt',
+                pointPlacement: 0.5,
+                pointPadding: 0.25
+            },
+            yAxis: {
+                min: 0,
+                max: 12,
+                reversed: true,
+                categories: []
+            }
+        },
+
+        series: series,
+        title: {
+            text: 'Jobs Schedule'
+        },
+        tooltip: {
+            pointFormat: '<span>instance Id: {point.instanceId}</span><br/><span>From: {point.start:%e. %b %H:%M}</span><br/><span>To: {point.end:%e. %b %H:%M}</span>'
+        },
+        scrollbar: {
+            enabled: true
+        },
+
+        rangeSelector: {
+            enabled: true,
+            selected: 0
+        },
+        accessibility: {
+            keyboardNavigation: {
+                seriesNavigation: {
+                    mode: 'serialize'
+                }
+            }
+        },
+        xAxis: {
+            currentDateIndicator: false,
+        },
+        yAxis: {
+
+            staticScale: 20,
+            type: 'category',
+            grid: {
+                columns: [{
+                    title: {
+                        text: 'Job'
+                    },
+                    categories: series.map(function (s) {
+                        return s.name;
+                    })
+                }, {
+                    title: {
+                        text: 'Instance Id'
+                    },
+                    categories: series.map(function (s) {
+                        return s.current.instanceId;
+                    })
+                }]
+            }
+        }
+    });
+</script>
