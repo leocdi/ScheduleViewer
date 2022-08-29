@@ -1,3 +1,3 @@
 # ScheduleViewer
 
-![image1](image1.jpg)
+![image](image.png)
